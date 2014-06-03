@@ -10,8 +10,9 @@ public class Solution {
                 "this", "wats", "o", "thh",
                 "z", "twah", "taht", "twahi",
                 "shgof", "twof", "", "gaah",
-                "twofgaah", "taagdh", "tahtgs", "ffffffffff"};
-
+                "twofgaah", "taagdh", "tahtgsti",
+                "ffffffffff", "tawoadg", "htsisgt",
+                "tawoadhtsih", "tt", "aaofghdgssitht"};
         char[][] matrix = new char[][]{
                 {'t', 'h', 'i', 's'},
                 {'w', 'a', 't', 's'},
@@ -25,7 +26,8 @@ public class Solution {
             for (int j = 0; j < n; j++) {
                 matrix[i][j] = (char) ('a' + new Random().nextInt(26));
             }
-        }*/
+        }
+        */
         Solution solution = new Solution();
         for (String s : words) {
             System.out.println(s + " : " + solution.containsWord(matrix, s));
@@ -36,41 +38,29 @@ public class Solution {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[0].length; j++) {
                 Set<Integer> used = new HashSet<>();
-                if (bfs(matrix, i, j, word, used)) return true;
+                if (dfs(matrix, i, j, word, used)) return true;
             }
         }
         return false;
     }
 
-    private boolean bfs(char[][] matrix, int i, int j, String word, Set<Integer> used) {
+    private boolean dfs(char[][] matrix, int i, int j, String word, Set<Integer> used) {
         if (word.isEmpty()) return true;
-        Queue<Integer> queue = new LinkedList<>();
-        queue.add(i * MULTIPLIER + j);
-        int k = 0;
-        while (!queue.isEmpty()) {
-            int size = queue.size();
-            boolean found = false;
-            for (int l = 0; l < size; l++) {
-                int v = queue.poll();
-                int ii = v / MULTIPLIER;
-                int jj = v % MULTIPLIER;
-                if (word.charAt(k) == matrix[ii][jj]) {
-                    used.add(v);//bug here! some nodes added here can lead to dead ends
-                                // and need to be removed from the visited set later on
-                    found = true;
-                    for (int a = ii - 1; a <= ii + 1; a++) {
-                        for (int b = jj - 1; b <= jj + 1; b++) {
-                            if (a >= 0 && a < matrix.length && b >= 0 && b < matrix[0].length
-                                    && !used.contains(a * MULTIPLIER + b)) {
-                                queue.add(a * MULTIPLIER + b);
-                            }
-                        }
+        if (matrix[i][j] != word.charAt(0)) return false;
+        for (int ii = i - 1; ii <= i + 1; ii++) {
+            for (int jj = j - 1; jj <= j + 1; jj++) {
+                int compoundIndex = ii * MULTIPLIER + jj;
+                if (ii >= 0 && jj >= 0 && ii < matrix.length && jj < matrix[0].length
+                        && !used.contains(compoundIndex)
+                        && (ii != i || jj != j)) {
+                    used.add(compoundIndex);
+                    if (dfs(matrix, ii, jj, word.substring(1), used))
+                        return true;
+                    else {
+                        used.remove(Integer.valueOf(compoundIndex));
                     }
                 }
             }
-            if (!found) return false;
-            k++;
-            if (k == word.length()) return true;
         }
         return false;
     }
