@@ -1,10 +1,10 @@
-//Chap01.text.01.findKthBiggestNumber.java
+//Chap01.text.01.findKthBiggest.java
 
 import java.util.*;
 
 public class Solution {
     public static void main(String[] args) {
-        int[] arr = new int[1000000];
+        int[] arr = new int[10000000];
         Random random = new Random();
         for (int i = 0; i < arr.length; i++) {
             arr[i] = random.nextInt(10000000);
@@ -22,10 +22,10 @@ public class Solution {
         System.out.print("quickSelect O(n) " + new Solution().findKthBiggest3(arr, arr.length / 2) + " : ");
         post = System.currentTimeMillis();
         System.out.println(post - prev);
-        prev = System.currentTimeMillis();
-        System.out.print("bubble up k biggest elements O(kn) " + new Solution().findKthBiggest1(arr, arr.length / 2) + " : ");
-        post = System.currentTimeMillis();
-        System.out.println(post - prev);
+//        prev = System.currentTimeMillis();
+//        System.out.print("bubble up k biggest elements O(kn) " + new Solution().findKthBiggest1(arr, arr.length / 2) + " : ");
+//        post = System.currentTimeMillis();
+//        System.out.println(post - prev);
     }
 
     // O(nlog(n))
@@ -72,7 +72,7 @@ public class Solution {
         assert n >= left && n <= right;
         while (left < right) {
             int pivotIndex = left + (int) Math.floor((right - left) * Math.random());
-            pivotIndex = partition(arr, left, right, pivotIndex);
+            pivotIndex = partition1(arr, left, right, pivotIndex);
             if (pivotIndex == n)
                 return arr[n];
             else if (pivotIndex > n) {
@@ -91,7 +91,7 @@ public class Solution {
         arr[right] = pivotValue;
         int storeIndex = left;
         for (int i = left; i < right; i++) {
-            if (arr[i] < pivotValue) {
+            if (arr[i] < pivotValue) { // on avg swap n/2 times
                 int t = arr[i];
                 arr[i] = arr[storeIndex];
                 arr[storeIndex] = t;
@@ -101,5 +101,29 @@ public class Solution {
         arr[right] = arr[storeIndex];
         arr[storeIndex] = pivotValue;
         return storeIndex;
+    }
+
+    //yet another more efficient implementation of partition
+    private int partition1(int[] arr, int left, int right, int pivotIndex) {
+        assert pivotIndex >= left && pivotIndex <= right;
+        int pivotValue = arr[pivotIndex];
+        //move pivot to end
+        arr[pivotIndex] = arr[right];
+        arr[right] = pivotValue;
+        int i = left, j = right - 1;
+        while (i < j) {
+            while (i < j && arr[i] <= pivotValue) i++;
+            while (i < j && arr[j] >= pivotValue) j--;
+            if(i < j) {
+                int t = arr[i]; // on avg swap n/4 times
+                arr[i] = arr[j];
+                arr[j] = t;
+                i++;
+                j--;
+            }
+        }
+        arr[right] = arr[i];
+        arr[i] = pivotValue;
+        return i;
     }
 }
