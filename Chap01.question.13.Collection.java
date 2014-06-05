@@ -50,6 +50,7 @@ public class Collection<T> {
     private void removeAt(int i) {
         assert 0 <= i && i < size;
         System.arraycopy(arr, i + 1, arr, i, size - i - 1);
+        size--;
     }
 
     public boolean isPresent(T e) {
