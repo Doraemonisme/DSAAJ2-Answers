@@ -1,6 +1,6 @@
 //Chap01.question.14.OrderedCollection.java
 
-public class OrderedCollection<E extends Comparable> {
+public class OrderedCollection<E extends Comparable<? super E>> {
     private static final int DEFAULT_CAPACITY = 10;
     private Comparable[] arr;
     private int size;
