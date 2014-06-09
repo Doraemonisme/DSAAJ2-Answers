@@ -32,6 +32,14 @@ public class MyArrayList<E> implements Iterable<E> {
         for (E e : items)
             add(e);
     }
+    
+    @SuppressWarnings("unchecked")
+    public void addAll(Iterable<? extends E> items) {
+        Iterator iterator = items.iterator();
+        while (iterator().hasNext()){
+            add((E)iterator.next());
+        }
+    }
 
     private void ensureCapacity(int i) {
         if (i <= capacity) return;
