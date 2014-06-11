@@ -139,14 +139,9 @@ public class MyLinkedList<T> implements Iterable<T> {
                 throw new IllegalStateException();
             if (expectedModCount != modCount)
                 throw new ConcurrentModificationException();
-            Node<T> before = cursor.prev.prev;
-            Node<T> nodeToBeDeleted = cursor.prev;
-            if (before != null)
-                before.next = cursor;
-            cursor.prev = before;
-            nodeToBeDeleted.next = null;
-            nodeToBeDeleted.prev = null;
+            MyLinkedList.this.remove(cursor.prev);
+            canRemove = false;
+            expectedModCount++;
         }
-
     }
 }
