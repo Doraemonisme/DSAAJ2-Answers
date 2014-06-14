@@ -14,6 +14,9 @@ public class TreeMemoryUsageTest {
         TreeNodeDirectLinksArrayPreAllocated.test();
         TreeNodeDirectLinksArrayList.test();
         TreeNodeNextSibling.test();
+        TripleTree.test();
+        TripleTree.test2();
+
     }
 
     public static <T extends Serializable> void printObjectSize(T t) {
@@ -26,6 +29,53 @@ public class TreeMemoryUsageTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+}
+
+class TripleTree implements Serializable {
+    int data;
+    TripleTree a, b, c;
+
+    TripleTree(int d) {
+        data = d;
+    }
+
+    static void test() {
+        int d = 0;
+        TripleTree root = new TripleTree(d++);
+        root.a = new TripleTree(d++);
+        root.b = new TripleTree(d++);
+        root.c = new TripleTree(d++);
+        root.a.a = new TripleTree(d++);
+        root.a.b = new TripleTree(d++);
+        root.a.c = new TripleTree(d++);
+        root.b.a = new TripleTree(d++);
+        root.b.b = new TripleTree(d++);
+        root.b.c = new TripleTree(d++);
+        root.c.a = new TripleTree(d++);
+        root.c.b = new TripleTree(d++);
+        root.c.c = new TripleTree(d++);
+        System.out.print(d);
+        TreeMemoryUsageTest.printObjectSize(root);
+    }
+
+    static void test2() {
+        int d = 0;
+        TreeNodeNextSibling root = new TreeNodeNextSibling(d++);
+        root.firstChild = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.firstChild = new TreeNodeNextSibling(d++);
+        root.firstChild.firstChild.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.firstChild.nextSibling.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.firstChild = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.firstChild.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.firstChild.nextSibling.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.nextSibling.firstChild = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.nextSibling.firstChild.nextSibling = new TreeNodeNextSibling(d++);
+        root.firstChild.nextSibling.nextSibling.firstChild.nextSibling.nextSibling = new TreeNodeNextSibling(d++);
+        System.out.print(d);
+        TreeMemoryUsageTest.printObjectSize(root);
     }
 }
 
