@@ -1,23 +1,10 @@
-//Chap04.question.11.BstSet.java
-
 import java.util.*;
 import java.util.Collection;
 
-/**
- * A TreeSet implementation based on Binary Search Tree.
- * <p/>
- * null is not allowed.
- *
- * @param <E>
- */
-public class BstSet<E extends Comparable<? super E>> implements Set<E> {
+public class BstSet<T extends Comparable<? super T>> implements Set<T> {
+
     private int size;
     private BstNode root;
-
-    public BstSet() {
-        size = 0;
-        root = null;
-    }
 
     @Override
     public int size() {
@@ -36,127 +23,139 @@ public class BstSet<E extends Comparable<? super E>> implements Set<E> {
 
     @SuppressWarnings("unchecked")
     private boolean contains0(BstNode node, Object o) {
-        if (o == null || node == null) return false;
+        if (node == null || o == null)
+            return false;
         try {
-            int compareResult = ((E) o).compareTo(node.data);
+            int compareResult = node.data.compareTo((T) o);
             if (compareResult < 0)
                 return contains0(node.left, o);
-            else return compareResult <= 0 || contains0(node.right, o);
+            else if (compareResult > 0)
+                return contains0(node.right, o);
+            else
+                return true;
         } catch (ClassCastException cce) {
             return false;
         }
     }
 
     @Override
-    public Iterator<E> iterator() {
-        return new Iterator<E>() {
-            int cur = 0;
-            BstNode node = root;
-            BstNode prev = null;
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+            private int nextIndex = 0;
+            private BstNode nextNode;
+            private BstNode prev;
 
+            //go to first node when initialized
             {
-                if (node != null)
-                    while (node.left != null)
-                        node = node.left;
+                nextNode = root;
+                while (nextNode != null && nextNode.left != null)
+                    nextNode = nextNode.left;
             }
 
             @Override
             public boolean hasNext() {
-                return cur < size;
+                return nextIndex < size;
             }
 
             @Override
-            public E next() {
-                if(!hasNext())
+            public T next() {
+                if (!hasNext())
                     throw new NoSuchElementException();
-                prev=node;
-                if(node.parent.left==node) {
-                    node=node.parent;
-                    if(node.right!=null)
-                        node=node.right;
-                    while (node.left!=null)
-                        node=node.left;
+                prev = nextNode;
+                nextIndex++;
+                if (nextNode.right != null) {
+                    nextNode = nextNode.right;
+                    while (nextNode.left != null)
+                        nextNode = nextNode.left;
+                } else if (nextNode.parent == null) {
+                    return prev.data;
+                } else if (nextNode.parent.left == nextNode.left) {
+                    nextNode = nextNode.parent;
                 } else {
-                    node=node.parent;
+                    BstNode p = nextNode.parent;
+                    while (p.parent != null && p.parent.right == p) {
+                        nextNode = p;
+                        p = p.parent;
+                    }
                 }
-                cur++;
-                return node.data;
+                return prev.data;
             }
 
             @Override
             public void remove() {
-                BstSet.this.remove(prev.data);
+                if (nextIndex == 0)
+                    throw new ConcurrentModificationException();
+                BstSet.this.remove(prev);
             }
         };
     }
 
     @Override
     public Object[] toArray() {
-        Object[] oa = new Object[size];
-        Iterator<E> iterator = iterator();
+        Object[] objects = new Object[size];
+        Iterator<T> iterator = iterator();
         for (int i = 0; i < size; i++) {
-            oa[i] = iterator.next();
+            objects[i] = iterator.next();
         }
-        return oa;
+        return objects;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T[] toArray(T[] a) {
-        T[] r = a.length > size ? a :
-                (T[]) java.lang.reflect.Array.newInstance(
+    public <T1> T1[] toArray(T1[] a) {
+        T1[] r = a.length >= size ? a :
+                (T1[]) java.lang.reflect.Array.newInstance(
                         a.getClass().getComponentType(), size);
-        Iterator<E> iterator = iterator();
+        Iterator<T> iterator = iterator();
         for (int i = 0; i < size; i++) {
-            E e = iterator.next();
-            r[i] = (T) e;
+            r[i] = (T1) iterator.next();
         }
         return r;
     }
 
     @Override
-    public boolean add(E e) {
-        if (e == null)
+    public boolean add(T t) {
+        if (t == null)
             return false;
         int oldSize = size;
-        root = add0(root, e);
-        return size > oldSize;
+        root = add0(root, t);
+        return oldSize < size;
     }
 
-    private BstNode add0(BstNode node, E e) {
-        assert e != null;
+    private BstNode add0(BstNode node, T t) {
+        assert t != null : "t should not be null";
+
         if (node == null) {
             size++;
-            return new BstNode(e, null, null, null);
+            return new BstNode(t);
         }
-
-        int compareResult = e.compareTo(node.data);
-
+        int compareResult = node.data.compareTo(t);
         if (compareResult < 0) {
-            node.left = add0(node.left, e);
-            if (node.left != null)
-                node.left.parent = node;
+            node.left = add0(node.left, t);
+            node.left.parent = node;
         } else if (compareResult > 0) {
-            node.right = add0(node.right, e);
-            if (node.right != null)
-                node.right.parent = node;
+            node.right = add0(node.right, t);
+            node.right.parent = node;
         }
         return node;
     }
 
     @Override
     public boolean remove(Object o) {
+        if (o == null) return false;
         int oldSize = size;
         remove0(root, o);
-        return size < oldSize;
+        return oldSize > size;
     }
 
     @SuppressWarnings("unchecked")
     private BstNode remove0(BstNode node, Object o) {
-        if (o == null || node == null) return node;
+        assert o != null : "o shouldn't be null";
+
+        if (node == null) return null;
 
         try {
-            int compareResult = ((E) o).compareTo(node.data);
+            int compareResult = node.data.compareTo((T) o);
             if (compareResult < 0) {
                 node.left = remove0(node.left, o);
                 if (node.left != null)
@@ -166,24 +165,27 @@ public class BstSet<E extends Comparable<? super E>> implements Set<E> {
                 if (node.right != null)
                     node.right.parent = node;
             } else {
-                //remove node
+                //found and remove
                 size--;
-                if (node.left == null && node.right == null) {
+                if (node.left == null && node.right == null)
+                    //delete leaf node
                     node = null;
-                } else if (node.left == null) {
+                else if (node.left == null) {
+                    //bypass node with one child
                     node.right.parent = node.parent;
                     node = node.right;
                 } else if (node.right == null) {
                     node.left.parent = node.parent;
                     node = node.left;
                 } else {
-                    BstNode r = node.left;
-                    while (r.right != null)
-                        r = r.right;
-                    node.left.parent = node.parent;
-                    node.right.parent = r;
-                    r.right = node.right;
-                    node = node.left;
+                    //replace with successor and remove successor
+                    BstNode successor = node.right;
+                    while (successor.left != null)
+                        successor = successor.left;
+                    node.data = successor.data;
+                    node.right = remove0(node.right, successor.data);
+                    if (node.right != null)
+                        node.right.parent = node;
                 }
             }
         } catch (ClassCastException cce) {
@@ -204,11 +206,12 @@ public class BstSet<E extends Comparable<? super E>> implements Set<E> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public boolean addAll(Collection<? extends E> c) {
-        if (c == null) return false;
+    public boolean addAll(Collection<? extends T> c) {
+        if (c == null)
+            return false;
         int oldSize = size;
         for (Object o : c) {
-            add((E) o);
+            add((T) o);
         }
         return size > oldSize;
     }
@@ -216,11 +219,11 @@ public class BstSet<E extends Comparable<? super E>> implements Set<E> {
     @Override
     public boolean retainAll(Collection<?> c) {
         if (c == null) return false;
-        Iterator<E> iterator = iterator();
-        for (int i = 0; i < size; i++) {
-            E e = iterator.next();
-            if (!c.contains(e))
-                remove(e);
+        Iterator<T> iterator = iterator();
+        while (iterator.hasNext()) {
+            T t = iterator.next();
+            if (!c.contains(t))
+                iterator.remove();
         }
         return true;
     }
@@ -232,7 +235,7 @@ public class BstSet<E extends Comparable<? super E>> implements Set<E> {
         for (Object o : c) {
             remove(o);
         }
-        return size < oldSize;
+        return oldSize > size;
     }
 
     @Override
@@ -242,14 +245,11 @@ public class BstSet<E extends Comparable<? super E>> implements Set<E> {
     }
 
     private class BstNode {
-        E data;
+        T data;
         BstNode parent, left, right;
 
-        BstNode(E d, BstNode p, BstNode l, BstNode r) {
-            data = d;
-            parent = p;
-            left = l;
-            right = r;
+        BstNode(T t) {
+            data = t;
         }
     }
 }
